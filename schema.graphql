@@ -1,0 +1,53 @@
+type Language {
+    id: ID!
+    name: String!
+    alternateName: String!
+    identifier: String! @id
+}
+
+type Project {
+    id: ID!
+    name: String!
+    identifier: String! @id
+    url: String!
+    inLanguage: Language!
+}
+
+type Namespace {
+    id: ID!
+    name: String!
+    identifier: Int!
+    inLanguage: Language!
+    isPartOf: Project!
+}
+
+type License {
+    id: ID!
+    name: String!
+    identifier: String! @id
+}
+
+type ArticleBody {
+    id: ID!
+    html: String!
+    wikitext: String!
+}
+
+type QID {
+    id: ID!
+    identifier: String! @id
+}
+
+type Page {
+    id: ID!
+    name: String! @id
+    identifier: Int! @id
+    version: Int!
+    dateModified: DateTime!
+    url: String!
+    namespace: Namespace!
+    inLanguage: Language!
+    mainEntity: QID!
+    articleBody: ArticleBody!
+    isPartOf: Project!
+}
