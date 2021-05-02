@@ -49,19 +49,19 @@ func main() {
 					log.Printf("error fetching the data: %v\n", err)
 				}
 
-				for title, meta := range data {
-					query := gql.MutationQuery{
-						Mutation: `
-							mutation {
-								addPage(input: [
-									%s
-								]) {
-									numUids
-								}
+				query := gql.MutationQuery{
+					Mutation: `
+						mutation {
+							addPage(input: [
+								%s
+							]) {
+								numUids
 							}
-						`,
-					}
+						}
+					`,
+				}
 
+				for title, meta := range data {
 					page := &models.Page{
 						Name:         meta.Title,
 						Identifier:   meta.PageID,
@@ -145,11 +145,11 @@ func main() {
 						page.IsPartOf.Identifier)
 
 					query.Payload += pp
+				}
 
-					if err := dg.Run(ctx, graphql.NewRequest(fmt.Sprintf(query.Mutation, query.Payload)), &map[string]interface{}{}); err != nil {
-						log.Println(err)
-						log.Println(query.Payload)
-					}
+				if err := dg.Run(ctx, graphql.NewRequest(fmt.Sprintf(query.Mutation, query.Payload)), &map[string]interface{}{}); err != nil {
+					log.Println(err)
+					log.Println(query.Payload)
 				}
 			}
 		}()

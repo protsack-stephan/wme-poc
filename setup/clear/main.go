@@ -12,23 +12,38 @@ func main() {
 	ctx := context.Background()
 
 	queries := []string{
-		// `mutation {
-		// 	deleteLanguage(filter: {}) {
-		// 		numUids
-		// 	}
-		// }`,
-		// `mutation {
-		// 	deleteProject(filter: {}) {
-		// 		numUids
-		// 	}
-		// }`,
-		// `mutation {
-		// 	deletePage(filter: {}) {
-		// 		numUids
-		// 	}
-		// }`,
+		`mutation {
+			deleteLanguage(filter: {}) {
+				numUids
+			}
+		}`,
+		`mutation {
+			deleteProject(filter: {}) {
+				numUids
+			}
+		}`,
 		`mutation {
 			deleteNamespace(filter: {}) {
+				numUids
+			}
+		}`,
+		`mutation {
+			deleteLicense(filter: {}) {
+				numUids
+			}
+		}`,
+		`mutation {
+			deleteArticleBody(filter: {}) {
+				numUids
+			}
+		}`,
+		`mutation {
+			deleteQID(filter: {}) {
+				numUids
+			}
+		}`,
+		`mutation {
+			deletePage(filter: {}) {
 				numUids
 			}
 		}`,
