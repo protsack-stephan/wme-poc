@@ -47,7 +47,7 @@ type Page {
     url: String!
     namespace: Namespace!
     inLanguage: Language!
-    mainEntity: QID!
+    mainEntity: QID
     articleBody: ArticleBody!
     isPartOf: Project!
 }
