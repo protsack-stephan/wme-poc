@@ -17,6 +17,10 @@ import (
 	dumps "github.com/protsack-stephan/mediawiki-dumps-client"
 )
 
+type projectQuery struct {
+	GetProject *models.Project `json:"getProject"`
+}
+
 func main() {
 	var batch int
 	var project string
@@ -31,11 +35,28 @@ func main() {
 	flag.Parse()
 
 	ctx := context.Background()
-	mwiki := mediawiki.NewClient(url)
-	wg := new(sync.WaitGroup)
-	dcl := dumps.NewClient()
-	titles := make(chan []string, workers)
 	dg := gql.NewClient()
+	nsQuery := `
+		query {
+			getProject(identifier: "%s") {
+				namespaces(filter: {identifier: {eq: 0}}) {
+					id
+					identifier
+					name
+				}
+			}
+		}
+	`
+	ns := &models.Namespace{}
+
+	if err := dg.Run(ctx, graphql.NewRequest(fmt.Sprintf(nsQuery, project)), &projectQuery{&models.Project{Namespaces: []*models.Namespace{ns}}}); err != nil {
+		log.Panicf("ns not found: %v", err)
+	}
+
+	mwiki := mediawiki.NewClient(url)
+	dcl := dumps.NewClient()
+	wg := new(sync.WaitGroup)
+	titles := make(chan []string, workers)
 	queue := []string{}
 
 	wg.Add(workers)
@@ -69,7 +90,7 @@ func main() {
 						DateModified: meta.Touched.Format(time.RFC3339),
 						URL:          fmt.Sprintf("%s/wiki/%s", url, title),
 						Namespace: &models.Namespace{
-							Identifier: 0,
+							ID: ns.ID,
 						},
 						InLanguage: &models.Language{
 							Identifier: meta.PageLanguage,
@@ -77,44 +98,27 @@ func main() {
 						MainEntity: &models.QID{
 							Identifier: meta.Pageprops.WikibaseItem,
 						},
-						ArticleBody: &models.ArticleBody{},
 						IsPartOf: &models.Project{
 							Identifier: project,
 						},
 					}
 
-					errs := make(chan error, 2)
+					htmlBody, err := mwiki.PageHTML(ctx, title, page.Version)
 
-					go func() {
-						data, err := mwiki.PageHTML(ctx, title, page.Version)
+					if err != nil {
+						return
+					}
 
-						if err != nil {
-							errs <- err
-							return
-						}
+					body := struct {
+						ArticleBody string `json:"articleBody"`
+					}{
+						string(htmlBody),
+					}
 
-						page.ArticleBody.HTML = minify(string(data))
-						errs <- nil
-					}()
+					htmlj, err := json.Marshal(body)
 
-					go func() {
-						data, err := mwiki.PageWikitext(ctx, title, page.Version)
-
-						if err != nil {
-							errs <- err
-							return
-						}
-
-						page.ArticleBody.Wiktext = minify(string(data))
-						errs <- nil
-					}()
-
-					for i := 0; i < 2; i++ {
-						err := <-errs
-
-						if err != nil {
-							log.Printf("page with title '%s' failed: %v\n", title, err)
-						}
+					if err != nil {
+						log.Println(err)
 					}
 
 					mainEntity := ""
@@ -123,25 +127,18 @@ func main() {
 						mainEntity = fmt.Sprintf(`mainEntity: { identifier: "%s" }, `, page.MainEntity.Identifier)
 					}
 
-					body, err := json.Marshal(page.ArticleBody)
-
-					if err != nil {
-						log.Printf("error during matshal: %v\n", err)
-					}
-
-					articleBody := strings.Replace(strings.Replace(string(body), `"html":`, ` html:`, 1), `"wikitext":`, ` wikitext:`, 1)
-
 					pp := fmt.Sprintf(
-						`{ name: "%s", identifier: %d, version: %d, dateModified: "%s", url: "%s", namespace: { identifier: %d }, inLanguage: { identifier: "%s" },%s articleBody: %s, isPartOf: { identifier: "%s"} }`,
+						`{ name: "%s", identifier: %d, version: %d, dateModified: "%s", url: "%s", namespace: { id: "%s" }, inLanguage: { identifier: "%s" },%s %s, encodingFormat: "%s", isPartOf: { identifier: "%s"} }`,
 						strings.ReplaceAll(page.Name, `"`, `\"`),
 						page.Identifier,
 						page.Version,
 						page.DateModified,
 						strings.ReplaceAll(page.URL, `"`, `\"`),
-						page.Namespace.Identifier,
+						page.Namespace.ID,
 						page.InLanguage.Identifier,
 						mainEntity,
-						articleBody,
+						strings.TrimSuffix(strings.Replace(string(htmlj), `{"articleBody":`, `articleBody:`, 1), `}`),
+						"text/html",
 						page.IsPartOf.Identifier)
 
 					query.Payload += pp
@@ -149,7 +146,6 @@ func main() {
 
 				if err := dg.Run(ctx, graphql.NewRequest(fmt.Sprintf(query.Mutation, query.Payload)), &map[string]interface{}{}); err != nil {
 					log.Println(err)
-					log.Println(query.Payload)
 				}
 			}
 		}()

@@ -13,9 +13,10 @@ services:
       - 8080:8080
       - 9080:9080
     restart: on-failure
-    command: dgraph alpha --my=alpha:7080 --zero=zero:5080
+    command: dgraph alpha --my=alpha:7080 --zero=zero:5080 --
     environment:
     #   DGRAPH_ALPHA_ACL: secret-file=/dgraph/acl/hmac_secret_file
       DGRAPH_ALPHA_SECURITY: whitelist=0.0.0.0/0
+      # DGRAPH_ALPHA_LIMIT: mutations-nquad=10000000;
     # volumes:
     #   - ./hmac_secret_file:/dgraph/acl/hmac_secret_file

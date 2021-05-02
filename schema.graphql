@@ -1,53 +1,57 @@
 type Language {
     id: ID!
-    name: String!
+    name: String! @search
     alternateName: String!
     identifier: String! @id
+    projects: [Project]  @hasInverse(field: inLanguage)
+    namespaces: [Namespace] @hasInverse(field: inLanguage)
+    pages: [Page] @hasInverse(field: inLanguage)
 }
 
 type Project {
     id: ID!
-    name: String!
+    name: String! @search
     identifier: String! @id
-    url: String!
-    inLanguage: Language!
+    url: String! @search
+    inLanguage: Language! @hasInverse(field: projects)
+    namespaces: [Namespace] @hasInverse(field: isPartOf)
+    pages: [Page] @hasInverse(field: isPartOf)
 }
 
 type Namespace {
     id: ID!
-    name: String!
-    identifier: Int!
-    inLanguage: Language!
-    isPartOf: Project!
+    name: String! @search
+    identifier: Int! @search
+    inLanguage: Language! @hasInverse(field: namespaces)
+    isPartOf: Project! @hasInverse(field: namespaces)
+    pages: [Page] @hasInverse(field: namespace)
 }
 
 type License {
     id: ID!
     name: String!
     identifier: String! @id
-}
-
-type ArticleBody {
-    id: ID!
-    html: String!
-    wikitext: String!
+    pages: [Page] @hasInverse(field: license)
 }
 
 type QID {
     id: ID!
     identifier: String! @id
+    isPartOf: [Page] @hasInverse(field: mainEntity)
 }
 
 type Page {
     id: ID!
-    name: String! @id
+    name: String! @id @search
     identifier: Int! @id
     version: Int!
     dateModified: DateTime!
     url: String!
-    namespace: Namespace!
-    inLanguage: Language!
-    mainEntity: QID
-    articleBody: ArticleBody!
-    isPartOf: Project!
+    namespace: Namespace! @hasInverse(field: pages)
+    inLanguage: Language! @hasInverse(field: pages)
+    mainEntity: QID @hasInverse(field: isPartOf)
+    articleBody: String! @search
+    encodingFormat: String!
+    isPartOf: Project! @hasInverse(field: pages)
+    license: [License] @hasInverse(field: pages)
 }
