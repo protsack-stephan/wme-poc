@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"dgraph-tutorial/pkg/gql"
+	"log"
+
+	"github.com/machinebox/graphql"
 )
 
 func main() {
@@ -25,5 +28,9 @@ func main() {
 				}
 			}
 		`,
+	}
+
+	if err := client.Run(ctx, graphql.NewRequest(query.Mutation), &map[string]interface{}{}); err != nil {
+		log.Panicf("mutation failed: %v", err)
 	}
 }
