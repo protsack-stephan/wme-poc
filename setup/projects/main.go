@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-	"dgraph-tutorial/models"
 	"fmt"
 	"log"
 
-	"dgraph-tutorial/pkg/gql"
+	"github.com/protsack-stephan/wme-poc/models"
+
+	"github.com/protsack-stephan/wme-poc/pkg/gql"
 
 	"github.com/machinebox/graphql"
 	mediawiki "github.com/protsack-stephan/mediawiki-api-client"

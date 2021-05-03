@@ -1,4 +1,4 @@
-module dgraph-tutorial
+module github.com/protsack-stephan/wme-poc
 
 go 1.15
 

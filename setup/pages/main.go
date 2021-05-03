@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"dgraph-tutorial/models"
-	"dgraph-tutorial/pkg/gql"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -11,6 +9,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/protsack-stephan/wme-poc/models"
+	"github.com/protsack-stephan/wme-poc/pkg/gql"
 
 	"github.com/machinebox/graphql"
 	"github.com/protsack-stephan/mediawiki-api-client"

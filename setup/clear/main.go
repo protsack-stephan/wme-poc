@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	"dgraph-tutorial/pkg/gql"
 	"log"
+
+	"github.com/protsack-stephan/wme-poc/pkg/gql"
 
 	"github.com/machinebox/graphql"
 )
