@@ -29,7 +29,7 @@ func main() {
 	var license string
 	var url string
 	flag.StringVar(&project, "p", "simplewiki", "Database name for the project")
-	flag.IntVar(&workers, "w", 10, "Number of workers")
+	flag.IntVar(&workers, "w", 1, "Number of workers")
 	flag.StringVar(&license, "l", "CC-BY-SA-4.0", "License identifier")
 	flag.IntVar(&batch, "b", 50, "Number of pages in batch")
 	flag.StringVar(&url, "u", "https://simple.wikipedia.org", "Project URL")
@@ -152,7 +152,7 @@ func main() {
 		}()
 	}
 
-	dcl.PageTitles(ctx, project, time.Now().UTC(), func(p *dumps.Page) {
+	err := dcl.PageTitles(ctx, project, time.Now().Add(-24*time.Hour).UTC(), func(p *dumps.Page) {
 		if len(queue) >= batch {
 			tmp := make([]string, len(queue))
 			copy(tmp, queue)
@@ -164,6 +164,10 @@ func main() {
 	})
 
 	titles <- queue
+
+	if err != nil {
+		log.Panicf("failed to fetch page titles: %v", err)
+	}
 
 	close(titles)
 	wg.Wait()

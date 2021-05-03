@@ -16,4 +16,4 @@ services:
     command: dgraph alpha --my=alpha:7080 --zero=zero:5080 --
     environment:
       DGRAPH_ALPHA_SECURITY: whitelist=0.0.0.0/0
-      DGRAPH_ALPHA_LIMIT: mutations-nquad=5000000;
+      DGRAPH_ALPHA_LIMIT: mutations-nquad=9000000;

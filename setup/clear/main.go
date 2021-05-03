@@ -34,11 +34,6 @@ func main() {
 			}
 		}`,
 		`mutation {
-			deleteArticleBody(filter: {}) {
-				numUids
-			}
-		}`,
-		`mutation {
 			deleteQID(filter: {}) {
 				numUids
 			}
